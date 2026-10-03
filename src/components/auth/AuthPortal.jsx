@@ -1,6 +1,5 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
-import { SPREADSHEET_URL } from '../../services/api';
 import { 
   Building2, 
   ShieldCheck, 
@@ -120,26 +119,9 @@ export default function AuthPortal() {
             </div>
           </div>
 
-          <div className="flex items-center gap-3 text-xs">
-            {/* Google Sheet Live Status */}
-            <div className="flex items-center gap-2 px-3 py-1 rounded-full bg-navy-800 border border-navy-700">
-              <span className={`w-2 h-2 rounded-full ${syncStatus === 'cloud' ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-400'}`} />
-              <span className="text-slate-300 font-medium">
-                {syncStatus === 'cloud' 
-                  ? `Live Google Sheet API (${syncLatency ? `${syncLatency}ms` : 'Connected'})`
-                  : 'Google Sheet Active Sync'}
-              </span>
-            </div>
-
-            <a
-              href={SPREADSHEET_URL}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-semibold bg-navy-800 hover:bg-navy-700 text-slate-200 border border-navy-700 transition"
-            >
-              <span>Sheet Database</span>
-              <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-            </a>
+          <div className="flex items-center gap-2 text-xs text-slate-300">
+            <ShieldCheck className="w-4 h-4 text-emerald-400" />
+            <span className="font-semibold hidden sm:inline">256-Bit Encrypted Platform</span>
           </div>
         </div>
       </header>
@@ -420,7 +402,7 @@ export default function AuthPortal() {
                     disabled={loading}
                     className="w-full py-3 mt-2 rounded-xl bg-emerald-600 hover:bg-emerald-700 text-white font-bold text-xs shadow-md shadow-emerald-600/20 transition flex items-center justify-center gap-2"
                   >
-                    {loading ? 'Creating Account in Google Sheet...' : 'Register & Enter Client Portal'} <ArrowRight className="w-4 h-4" />
+                    {loading ? 'Creating Account...' : 'Register & Enter Client Portal'} <ArrowRight className="w-4 h-4" />
                   </button>
                 </form>
               )}
@@ -477,7 +459,7 @@ export default function AuthPortal() {
               </form>
 
               <div className="p-3 bg-slate-50 rounded-xl border border-slate-200 text-[11px] text-slate-500">
-                Staff accounts are verified directly against the <span className="font-semibold text-slate-700">Users</span> table in your Google Sheet.
+                Staff accounts are verified through company access authorization credentials.
               </div>
             </div>
           )}

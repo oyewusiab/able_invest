@@ -206,7 +206,7 @@ export default function AdminDashboard({ setActiveTab }) {
           </div>
 
           <div className="mt-4 pt-3 border-t border-slate-100 flex items-center justify-between text-xs text-slate-500">
-            <span>Directly mapped to Google Sheet: <span className="font-mono font-semibold">Transactions_Ledger</span></span>
+            <span>Audit-verified: <span className="font-mono font-semibold">Transactions_Ledger</span></span>
             <button
               onClick={() => setActiveTab('ledger')}
               className="font-bold text-slate-900 hover:text-indigo-600"

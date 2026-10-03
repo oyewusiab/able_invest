@@ -1,20 +1,15 @@
 import React, { useState } from 'react';
 import { useAuth } from '../../context/AuthContext';
 import { useData } from '../../context/DataContext';
-import { SPREADSHEET_URL } from '../../services/api';
 import { 
   Building2, 
-  ExternalLink, 
   RefreshCw, 
   LogOut,
-  ShieldCheck,
-  CheckCircle2,
-  User,
   ChevronDown
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab }) {
-  const { currentUser, logout, syncStatus, syncLatency, isCompanyStaff } = useAuth();
+  const { currentUser, logout, isCompanyStaff } = useAuth();
   const { loadData, loading } = useData();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -41,42 +36,17 @@ export default function Navbar({ activeTab, setActiveTab }) {
         {/* Right Action Bar */}
         <div className="flex items-center gap-2 sm:gap-4">
           
-          {/* Google Sheet Direct Link */}
-          <a
-            href={SPREADSHEET_URL}
-            target="_blank"
-            rel="noopener noreferrer"
-            title="Open connected Google Sheets database"
-            className="hidden md:flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium bg-navy-800 hover:bg-navy-700 text-slate-300 border border-navy-700 transition"
-          >
-            <span>Google Sheet DB</span>
-            <ExternalLink className="w-3.5 h-3.5 text-slate-400" />
-          </a>
-
           {/* Refresh Data button */}
           <button
             onClick={() => loadData()}
             disabled={loading}
-            title="Synchronize records with Google Sheet"
+            title="Synchronize records"
             className="p-2 rounded-lg text-slate-300 hover:text-white hover:bg-navy-800 border border-navy-700 transition"
           >
             <RefreshCw className={`w-4 h-4 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
           </button>
 
-          {/* Cloud Sync Status Indicator */}
-          <div 
-            title={syncStatus === 'cloud' ? 'Directly connected to Google Apps Script backend' : 'Active local sync'}
-            className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-navy-800/80 border border-navy-700"
-          >
-            <span className={`w-2 h-2 rounded-full ${syncStatus === 'cloud' ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-400'}`} />
-            <span className="text-slate-300 text-[11px]">
-              {syncStatus === 'cloud' 
-                ? `Google Sheet Online ${syncLatency ? `(${syncLatency}ms)` : ''}` 
-                : 'Sheet Connected'}
-            </span>
-          </div>
-
-          {/* Real User Profile & Session Logout */}
+          {/* User Profile & Session Logout */}
           <div className="relative">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
