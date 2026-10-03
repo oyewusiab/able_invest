@@ -15,11 +15,12 @@ import {
   ShieldCheck, 
   Calendar, 
   AlertTriangle,
-  FileText
+  FileText,
+  RefreshCw
 } from 'lucide-react';
 
 export default function LoanReviewDesk() {
-  const { loans, schemes, reviewLoan } = useData();
+  const { loans, schemes, reviewLoan, loadData, loading } = useData();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -55,12 +56,14 @@ export default function LoanReviewDesk() {
   const handleApprove = async (loanId) => {
     setIsSubmitting(true);
     await reviewLoan(loanId, 'APPROVE');
+    await loadData();
     setIsSubmitting(false);
   };
 
   const handleDisburse = async (loanId) => {
     setIsSubmitting(true);
     const res = await reviewLoan(loanId, 'DISBURSE');
+    await loadData();
     setIsSubmitting(false);
     if (res.success) {
       try {
@@ -78,6 +81,7 @@ export default function LoanReviewDesk() {
     if (!selectedLoan) return;
     setIsSubmitting(true);
     await reviewLoan(selectedLoan.id, 'REJECT', rejectReason);
+    await loadData();
     setIsSubmitting(false);
     setIsRejectOpen(false);
     setRejectReason('');
@@ -111,7 +115,16 @@ export default function LoanReviewDesk() {
         </div>
 
         <div className="flex items-center gap-2 text-xs">
-          <div className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-bold">
+          <button
+            onClick={() => loadData()}
+            disabled={loading}
+            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition flex items-center gap-1.5 font-bold"
+            title="Synchronize loan records"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+            <span>Sync</span>
+          </button>
+          <div className="px-3 py-2 rounded-xl bg-slate-100 text-slate-700 font-bold">
             Total Facility Volume: <span className="text-emerald-700 font-mono">₦{enrichedLoans.reduce((a, b) => a + (Number(b.principal_amount) || 0), 0).toLocaleString()}</span>
           </div>
         </div>

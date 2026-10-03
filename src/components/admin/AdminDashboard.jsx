@@ -13,11 +13,12 @@ import {
   ArrowRight, 
   AlertTriangle,
   Receipt,
-  Users
+  Users,
+  RefreshCw
 } from 'lucide-react';
 
 export default function AdminDashboard({ setActiveTab }) {
-  const { adminMetrics, loans, ledger } = useData();
+  const { adminMetrics, loans, ledger, loadData, loading } = useData();
 
   const pendingLoans = loans.filter(l => l.status === 'PENDING' || l.status === 'UNDER_REVIEW');
   const activeLoans = loans.filter(l => l.status === 'ACTIVE');
@@ -43,7 +44,17 @@ export default function AdminDashboard({ setActiveTab }) {
 
         {/* Liquidity Reserve Box */}
         <div className="bg-slate-900 text-white rounded-2xl p-5 border border-slate-800 min-w-[240px]">
-          <span className="text-xs text-slate-400 font-medium">Estimated Company Liquidity Reserve</span>
+          <div className="flex items-center justify-between">
+            <span className="text-xs text-slate-400 font-medium">Estimated Company Liquidity</span>
+            <button
+              onClick={() => loadData()}
+              disabled={loading}
+              className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              title="Synchronize company ledger state"
+            >
+              <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-400' : ''}`} />
+            </button>
+          </div>
           <div className="text-2xl sm:text-3xl font-black text-emerald-400 mt-1">
             ₦{Number(adminMetrics.liquidityReserve || 0).toLocaleString()}
           </div>

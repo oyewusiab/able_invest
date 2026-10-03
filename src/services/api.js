@@ -570,6 +570,7 @@ async function callApi(action, payload = {}, method = 'POST') {
           if (data.investments) localStore.set('able_investments', data.investments);
           if (data.loans) localStore.set('able_loans', data.loans);
           if (data.transactions) localStore.set('able_ledger', data.transactions);
+          if (data.ledger) localStore.set('able_ledger', data.ledger);
         } catch (e) { /* ignore storage error */ }
 
         return { data, source: 'cloud', latency };
@@ -634,6 +635,25 @@ function executeLocalFallback(action, payload) {
         schemes = schemes.filter(s => s.category === payload.category);
       }
       return { status: 'success', schemes };
+    }
+
+    case 'get_company_data': {
+      const schemes = localStore.get('able_schemes');
+      const loans = localStore.get('able_loans');
+      const savings = localStore.get('able_savings');
+      const investments = localStore.get('able_investments');
+      const ledger = localStore.get('able_ledger');
+      const users = localStore.get('able_users');
+      return {
+        status: 'success',
+        schemes,
+        loans,
+        savings,
+        investments,
+        ledger: ledger.slice().reverse(),
+        users,
+        metrics: executeLocalFallback('get_admin_dashboard_metrics').metrics
+      };
     }
 
     case 'create_scheme': {
@@ -1156,6 +1176,7 @@ export const api = {
   login: (email, password) => callApi('auth_login', { email, password }),
   register: (userData) => mutateApi('auth_register', userData),
   getSchemes: (category) => callApi('get_schemes', { category }, 'GET'),
+  getCompanyData: () => callApi('get_company_data', {}, 'GET'),
   createScheme: (data) => mutateApi('create_scheme', data),
   getCustomerOverview: (userId) => callApi('get_customer_overview', { user_id: userId }, 'GET'),
   getAdminDashboardMetrics: () => callApi('get_admin_dashboard_metrics', {}, 'GET'),

@@ -6,11 +6,12 @@ import {
   Lock, 
   Search, 
   CheckCircle, 
-  Download 
+  Download,
+  RefreshCw 
 } from 'lucide-react';
 
 export default function SavingsManager() {
-  const { savings, schemes } = useData();
+  const { savings, schemes, loadData, loading } = useData();
   const [searchTerm, setSearchTerm] = useState('');
 
   const filteredSavings = savings.filter((s) => {
@@ -41,6 +42,15 @@ export default function SavingsManager() {
         </div>
 
         <div className="flex items-center gap-3 text-xs">
+          <button
+            onClick={() => loadData()}
+            disabled={loading}
+            className="p-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition flex items-center gap-1.5 font-bold"
+            title="Synchronize savings records"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+            <span>Sync</span>
+          </button>
           <div className="p-3 bg-emerald-50 rounded-xl border border-emerald-100">
             <span className="text-[10px] text-emerald-700 font-bold uppercase block">Total Deposits Held</span>
             <span className="text-base font-black text-emerald-900 font-mono">₦{totalBalance.toLocaleString()}</span>

@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { api } from '../../services/api';
+import React, { useState } from 'react';
+import { useData } from '../../context/DataContext';
 import Badge from '../common/Badge';
 import Modal from '../common/Modal';
 import { 
@@ -11,35 +11,18 @@ import {
   Phone, 
   Mail, 
   CheckCircle2, 
-  AlertCircle 
+  AlertCircle,
+  RefreshCw
 } from 'lucide-react';
 
 export default function UserRegistry() {
-  const [users, setUsers] = useState([]);
+  const { users, verifyKyc, loadData, loading } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [roleFilter, setRoleFilter] = useState('ALL');
   const [selectedUser, setSelectedUser] = useState(null);
-  const [loading, setLoading] = useState(true);
-
-  useEffect(() => {
-    loadUsers();
-  }, []);
-
-  const loadUsers = async () => {
-    setLoading(true);
-    const res = await api.getUsers();
-    if (res.data?.users) {
-      setUsers(res.data.users);
-    }
-    setLoading(false);
-  };
 
   const handleVerifyKyc = async (user) => {
-    await api.updateKyc({
-      user_id: user.id,
-      kyc_status: 'VERIFIED'
-    });
-    await loadUsers();
+    await verifyKyc(user.id);
     if (selectedUser && selectedUser.id === user.id) {
       setSelectedUser({ ...selectedUser, kyc_status: 'VERIFIED' });
     }
@@ -71,8 +54,19 @@ export default function UserRegistry() {
           </p>
         </div>
 
-        <div className="text-xs font-bold px-3 py-1.5 rounded-xl bg-slate-50 border border-slate-200 text-slate-700">
-          Total Users: <span className="text-emerald-700 font-mono">{users.length}</span>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => loadData()}
+            disabled={loading}
+            className="p-2 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition flex items-center gap-1.5 text-xs font-bold"
+            title="Synchronize user records"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+            <span>Sync</span>
+          </button>
+          <div className="text-xs font-bold px-3 py-2 rounded-xl bg-slate-50 border border-slate-200 text-slate-700">
+            Total Users: <span className="text-emerald-700 font-mono">{users.length}</span>
+          </div>
         </div>
       </div>
 

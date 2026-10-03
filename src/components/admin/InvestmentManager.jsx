@@ -9,11 +9,12 @@ import {
   ShieldCheck, 
   Search, 
   Filter, 
-  Download 
+  Download,
+  RefreshCw 
 } from 'lucide-react';
 
 export default function InvestmentManager() {
-  const { investments } = useData();
+  const { investments, loadData, loading } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
 
@@ -21,6 +22,7 @@ export default function InvestmentManager() {
     const matchesSearch = 
       (inv.investment_ref || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (inv.scheme_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (inv.user_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (inv.certificate_no || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     if (statusFilter === 'ALL') return matchesSearch;
@@ -47,6 +49,15 @@ export default function InvestmentManager() {
         </div>
 
         <div className="flex items-center gap-3 text-xs">
+          <button
+            onClick={() => loadData()}
+            disabled={loading}
+            className="p-3 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition flex items-center gap-1.5 font-bold"
+            title="Synchronize investment records"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-indigo-600' : ''}`} />
+            <span>Sync</span>
+          </button>
           <div className="p-3 bg-indigo-50 rounded-xl border border-indigo-100">
             <span className="text-[10px] text-indigo-700 font-bold uppercase block">Total Managed Principal</span>
             <span className="text-base font-black text-indigo-900 font-mono">₦{totalPrincipal.toLocaleString()}</span>

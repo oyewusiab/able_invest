@@ -111,6 +111,10 @@ function doGet(e) {
       return createJsonResponse(getAllUsers());
     }
 
+    if (action === "get_company_data") {
+      return createJsonResponse(getCompanyData());
+    }
+
     return createJsonResponse({ status: "error", message: "Unknown GET action: " + action });
   } catch (err) {
     return createJsonResponse({ status: "error", message: err.toString(), stack: err.stack });
@@ -601,6 +605,50 @@ function getAdminDashboardMetrics() {
     pendingLoans: pendingLoans,
     pendingTransactions: pendingTransactions.slice(0, 15),
     recentAuditLogs: getSheetRowsAsObjects(TABLES.AUDIT).slice(-10).reverse()
+  };
+}
+
+/**
+ * Consolidated Company Platform State (1 Single Ultra-Fast Request)
+ */
+function getCompanyData() {
+  const users = getSheetRowsAsObjects(TABLES.USERS);
+  const schemes = getSheetRowsAsObjects(TABLES.SCHEMES);
+  const savings = getSheetRowsAsObjects(TABLES.SAVINGS);
+  const investments = getSheetRowsAsObjects(TABLES.INVESTMENTS);
+  const loans = getSheetRowsAsObjects(TABLES.LOANS);
+  const ledger = getSheetRowsAsObjects(TABLES.LEDGER);
+
+  const totalCustomerSavings = savings.reduce((acc, s) => acc + (Number(s.current_balance) || 0), 0);
+  const totalActiveInvestments = investments.filter(i => i.status === "ACTIVE").reduce((acc, i) => acc + (Number(i.principal_amount) || 0), 0);
+  const totalActiveLoansDisbursed = loans.filter(l => l.status === "ACTIVE").reduce((acc, l) => acc + (Number(l.principal_amount) || 0), 0);
+  const totalLoanRepaid = loans.reduce((acc, l) => acc + (Number(l.amount_repaid) || 0), 0);
+  const totalLoanOutstanding = loans.filter(l => l.status === "ACTIVE").reduce((acc, l) => acc + (Number(l.amount_outstanding) || 0), 0);
+
+  const pendingLoans = loans.filter(l => l.status === "PENDING" || l.status === "UNDER_REVIEW");
+  const pendingTransactions = ledger.filter(t => t.status === "PENDING");
+  const pendingKycUsers = users.filter(u => u.kyc_status === "PENDING");
+
+  return {
+    status: "success",
+    schemes: schemes,
+    loans: loans,
+    savings: savings,
+    investments: investments,
+    ledger: ledger.slice().reverse(),
+    users: users,
+    metrics: {
+      totalCustomers: users.filter(u => u.role === "CUSTOMER").length,
+      totalCustomerSavings: totalCustomerSavings,
+      totalActiveInvestments: totalActiveInvestments,
+      totalActiveLoansDisbursed: totalActiveLoansDisbursed,
+      totalLoanRepaid: totalLoanRepaid,
+      totalLoanOutstanding: totalLoanOutstanding,
+      pendingLoansCount: pendingLoans.length,
+      pendingTxnsCount: pendingTransactions.length,
+      pendingKycCount: pendingKycUsers.length,
+      liquidityReserve: (totalCustomerSavings + totalActiveInvestments + totalLoanRepaid) - totalActiveLoansDisbursed
+    }
   };
 }
 

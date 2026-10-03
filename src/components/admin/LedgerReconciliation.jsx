@@ -11,11 +11,12 @@ import {
   ShieldCheck, 
   CheckCircle2, 
   ArrowUpRight, 
-  ArrowDownLeft 
+  ArrowDownLeft,
+  RefreshCw 
 } from 'lucide-react';
 
 export default function LedgerReconciliation() {
-  const { ledger } = useData();
+  const { ledger, loadData, loading } = useData();
   const [searchTerm, setSearchTerm] = useState('');
   const [filterType, setFilterType] = useState('ALL');
   const [selectedTxn, setSelectedTxn] = useState(null);
@@ -82,6 +83,14 @@ export default function LedgerReconciliation() {
         </div>
 
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => loadData()}
+            disabled={loading}
+            className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"
+            title="Synchronize ledger transactions"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-600' : ''}`} /> Sync
+          </button>
           <button
             onClick={() => window.print()}
             className="flex items-center gap-1.5 px-3.5 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 rounded-xl text-xs font-bold transition"

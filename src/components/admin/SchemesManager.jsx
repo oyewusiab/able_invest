@@ -10,11 +10,12 @@ import {
   PiggyBank, 
   ShieldCheck, 
   Check, 
-  HelpCircle 
+  HelpCircle,
+  RefreshCw 
 } from 'lucide-react';
 
 export default function SchemesManager() {
-  const { schemes, createScheme } = useData();
+  const { schemes, createScheme, loadData, loading } = useData();
 
   const [activeCategory, setActiveCategory] = useState('ALL');
   const [isCreateOpen, setIsCreateOpen] = useState(false);
@@ -82,12 +83,23 @@ export default function SchemesManager() {
           </p>
         </div>
 
-        <button
-          onClick={() => setIsCreateOpen(true)}
-          className="flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-emerald-600/20 self-start sm:self-auto"
-        >
-          <Plus className="w-4 h-4" /> Create New Scheme
-        </button>
+        <div className="flex items-center gap-2 self-start sm:self-auto">
+          <button
+            onClick={() => loadData()}
+            disabled={loading}
+            className="p-2.5 rounded-xl border border-slate-200 hover:bg-slate-50 text-slate-600 transition flex items-center gap-1.5 text-xs font-bold"
+            title="Synchronize schemes"
+          >
+            <RefreshCw className={`w-3.5 h-3.5 ${loading ? 'animate-spin text-emerald-600' : ''}`} />
+            <span>Sync</span>
+          </button>
+          <button
+            onClick={() => setIsCreateOpen(true)}
+            className="flex items-center gap-1.5 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-700 text-white rounded-xl text-xs font-bold transition shadow-md shadow-emerald-600/20"
+          >
+            <Plus className="w-4 h-4" /> Create New Scheme
+          </button>
+        </div>
       </div>
 
       {/* Category Tabs */}
