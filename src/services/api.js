@@ -537,7 +537,13 @@ async function callApi(action, payload = {}, method = 'POST') {
     };
 
     if (method === 'GET') {
-      const query = new URLSearchParams({ action, ...payload }).toString();
+      const cleanParams = {};
+      Object.entries(payload).forEach(([k, v]) => {
+        if (v !== undefined && v !== null && v !== '' && v !== 'undefined') {
+          cleanParams[k] = v;
+        }
+      });
+      const query = new URLSearchParams({ action, ...cleanParams }).toString();
       url = `${APPS_SCRIPT_URL}?${query}`;
     } else {
       fetchOptions.body = JSON.stringify({ action, ...payload });
@@ -1091,30 +1097,30 @@ function executeLocalFallback(action, payload) {
 
     case 'get_ledger': {
       let ledger = localStore.get('able_ledger');
-      if (payload.user_id) {
+      if (payload.user_id && payload.user_id !== 'undefined') {
         ledger = ledger.filter(t => t.user_id === payload.user_id);
       }
-      return { status: 'success', transactions: ledger.reverse() };
+      return { status: 'success', transactions: ledger.slice().reverse() };
     }
 
     case 'get_loans': {
       let loans = localStore.get('able_loans');
-      if (payload.user_id) loans = loans.filter(l => l.user_id === payload.user_id);
-      if (payload.status && payload.status !== 'ALL') loans = loans.filter(l => l.status === payload.status);
-      return { status: 'success', loans: loans.reverse() };
+      if (payload.user_id && payload.user_id !== 'undefined') loans = loans.filter(l => l.user_id === payload.user_id);
+      if (payload.status && payload.status !== 'ALL' && payload.status !== 'undefined') loans = loans.filter(l => l.status === payload.status);
+      return { status: 'success', loans: loans.slice().reverse() };
     }
 
     case 'get_investments': {
       let invs = localStore.get('able_investments');
-      if (payload.user_id) invs = invs.filter(i => i.user_id === payload.user_id);
-      if (payload.status && payload.status !== 'ALL') invs = invs.filter(i => i.status === payload.status);
-      return { status: 'success', investments: invs.reverse() };
+      if (payload.user_id && payload.user_id !== 'undefined') invs = invs.filter(i => i.user_id === payload.user_id);
+      if (payload.status && payload.status !== 'ALL' && payload.status !== 'undefined') invs = invs.filter(i => i.status === payload.status);
+      return { status: 'success', investments: invs.slice().reverse() };
     }
 
     case 'get_savings': {
       let savings = localStore.get('able_savings');
-      if (payload.user_id) savings = savings.filter(s => s.user_id === payload.user_id);
-      return { status: 'success', savings: savings.reverse() };
+      if (payload.user_id && payload.user_id !== 'undefined') savings = savings.filter(s => s.user_id === payload.user_id);
+      return { status: 'success', savings: savings.slice().reverse() };
     }
 
     case 'get_schedules': {

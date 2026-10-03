@@ -19,7 +19,7 @@ import {
 } from 'lucide-react';
 
 export default function LoanReviewDesk() {
-  const { loans, reviewLoan } = useData();
+  const { loans, schemes, reviewLoan } = useData();
 
   const [searchTerm, setSearchTerm] = useState('');
   const [statusFilter, setStatusFilter] = useState('ALL');
@@ -30,11 +30,23 @@ export default function LoanReviewDesk() {
   const [isRejectOpen, setIsRejectOpen] = useState(false);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const filteredLoans = loans.filter((ln) => {
+  // Robust enrichment: ensures scheme_name and user_name are always available
+  const enrichedLoans = (loans || []).map((ln) => {
+    const matchedScheme = schemes.find(s => s.id === ln.scheme_id);
+    return {
+      ...ln,
+      scheme_name: ln.scheme_name || (matchedScheme ? matchedScheme.name : 'Credit Scheme'),
+      user_name: ln.user_name || 'Registered Client'
+    };
+  });
+
+  const filteredLoans = enrichedLoans.filter((ln) => {
     const matchesSearch = 
       (ln.loan_ref || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
       (ln.user_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (ln.purpose || '').toLowerCase().includes(searchTerm.toLowerCase());
+      (ln.scheme_name || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (ln.purpose || '').toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (ln.guarantor_name || '').toLowerCase().includes(searchTerm.toLowerCase());
 
     if (statusFilter === 'ALL') return matchesSearch;
     return matchesSearch && ln.status === statusFilter;
@@ -100,7 +112,7 @@ export default function LoanReviewDesk() {
 
         <div className="flex items-center gap-2 text-xs">
           <div className="px-3 py-1.5 rounded-xl bg-slate-100 text-slate-700 font-bold">
-            Total Facility Volume: <span className="text-emerald-700 font-mono">₦{loans.reduce((a, b) => a + (Number(b.principal_amount) || 0), 0).toLocaleString()}</span>
+            Total Facility Volume: <span className="text-emerald-700 font-mono">₦{enrichedLoans.reduce((a, b) => a + (Number(b.principal_amount) || 0), 0).toLocaleString()}</span>
           </div>
         </div>
       </div>

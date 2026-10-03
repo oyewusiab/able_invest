@@ -130,22 +130,32 @@ export function DataProvider({ children }) {
         ]);
 
         if (schemesRes.status === 'fulfilled' && schemesRes.value?.data?.schemes) {
-          setSchemes(schemesRes.value.data.schemes);
+          const fresh = schemesRes.value.data.schemes;
+          setSchemes(fresh);
+          localStore.set('able_schemes', fresh);
         }
         if (metricsRes.status === 'fulfilled' && metricsRes.value?.data?.metrics) {
           setAdminMetrics(metricsRes.value.data.metrics);
         }
         if (loansRes.status === 'fulfilled' && loansRes.value?.data?.loans) {
-          setLoans(loansRes.value.data.loans);
+          const fresh = loansRes.value.data.loans;
+          setLoans(fresh);
+          localStore.set('able_loans', fresh);
         }
         if (invsRes.status === 'fulfilled' && invsRes.value?.data?.investments) {
-          setInvestments(invsRes.value.data.investments);
+          const fresh = invsRes.value.data.investments;
+          setInvestments(fresh);
+          localStore.set('able_investments', fresh);
         }
         if (savsRes.status === 'fulfilled' && savsRes.value?.data?.savings) {
-          setSavings(savsRes.value.data.savings);
+          const fresh = savsRes.value.data.savings;
+          setSavings(fresh);
+          localStore.set('able_savings', fresh);
         }
         if (ledgerRes.status === 'fulfilled' && ledgerRes.value?.data?.transactions) {
-          setLedger(ledgerRes.value.data.transactions);
+          const fresh = ledgerRes.value.data.transactions;
+          setLedger(fresh);
+          localStore.set('able_ledger', fresh);
         }
       } else if (currentUser) {
         const [schemesRes, custRes] = await Promise.allSettled([
