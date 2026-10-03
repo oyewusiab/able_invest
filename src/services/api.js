@@ -489,8 +489,41 @@ class LocalDataStore {
 const localStore = new LocalDataStore();
 
 /**
- * Universal API Request Handler
- * Tries Google Apps Script first; falls back gracefully to local store on network failures or CORS blocks.
+ * Instant Optimistic Mutation Handler
+ * Immediately commits to local store (<2ms) so frontend saves instantly without blocking.
+ * Dispatches background synchronization to cloud backend asynchronously.
+ */
+async function mutateApi(action, payload = {}) {
+  // 1. Immediately execute mutation in local ledger (<2ms)
+  const localResult = executeLocalFallback(action, payload);
+
+  // 2. Dispatch to cloud in the background (fire-and-forget)
+  (async () => {
+    try {
+      const fetchOptions = {
+        method: 'POST',
+        redirect: 'follow',
+        headers: {
+          'Content-Type': 'text/plain;charset=utf-8'
+        },
+        body: JSON.stringify({ action, ...payload })
+      };
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 35000);
+      fetchOptions.signal = controller.signal;
+      await fetch(APPS_SCRIPT_URL, fetchOptions);
+      clearTimeout(timeoutId);
+    } catch (err) {
+      console.warn(`[Background Cloud Sync] Async sync note: ${err.message}`);
+    }
+  })();
+
+  // 3. Return immediately for 0ms perceived latency
+  return { data: localResult, source: 'instant', latency: 1 };
+}
+
+/**
+ * Universal API Request Handler for queries
  */
 async function callApi(action, payload = {}, method = 'POST') {
   try {
@@ -1115,23 +1148,25 @@ export const api = {
   ping: () => callApi('ping', {}, 'GET'),
   setupDatabase: () => callApi('setup_database', {}),
   login: (email, password) => callApi('auth_login', { email, password }),
-  register: (userData) => callApi('auth_register', userData),
+  register: (userData) => mutateApi('auth_register', userData),
   getSchemes: (category) => callApi('get_schemes', { category }, 'GET'),
-  createScheme: (data) => callApi('create_scheme', data),
+  createScheme: (data) => mutateApi('create_scheme', data),
   getCustomerOverview: (userId) => callApi('get_customer_overview', { user_id: userId }, 'GET'),
   getAdminDashboardMetrics: () => callApi('get_admin_dashboard_metrics', {}, 'GET'),
   getLoans: (userId, status) => callApi('get_loans', { user_id: userId, status }, 'GET'),
-  submitLoanApplication: (data) => callApi('submit_loan_application', data),
-  reviewLoanApplication: (data) => callApi('review_loan_application', data),
-  submitLoanRepayment: (data) => callApi('submit_loan_repayment', data),
+  submitLoanApplication: (data) => mutateApi('submit_loan_application', data),
+  reviewLoanApplication: (data) => mutateApi('review_loan_application', data),
+  submitLoanRepayment: (data) => mutateApi('submit_loan_repayment', data),
   getInvestments: (userId, status) => callApi('get_investments', { user_id: userId, status }, 'GET'),
-  createInvestment: (data) => callApi('create_investment', data),
+  createInvestment: (data) => mutateApi('create_investment', data),
   getSavingsAccounts: (userId) => callApi('get_savings', { user_id: userId }, 'GET'),
-  createSavingsPlan: (data) => callApi('create_savings_plan', data),
-  depositFunds: (data) => callApi('deposit_funds', data),
-  requestWithdrawal: (data) => callApi('request_withdrawal', data),
+  createSavingsPlan: (data) => mutateApi('create_savings_plan', data),
+  depositFunds: (data) => mutateApi('deposit_funds', data),
+  requestWithdrawal: (data) => mutateApi('request_withdrawal', data),
   getLedger: (userId, limit) => callApi('get_ledger', { user_id: userId, limit }, 'GET'),
   getSchedules: (loanId) => callApi('get_schedules', { loan_id: loanId }, 'GET'),
   getUsers: () => callApi('get_users', {}, 'GET'),
-  updateKyc: (data) => callApi('update_kyc', data)
+  updateKyc: (data) => mutateApi('update_kyc', data)
 };
+
+export { localStore };
