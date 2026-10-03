@@ -2,6 +2,9 @@ import React, { useState } from 'react';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { DataProvider, useData } from './context/DataContext';
 
+// Authentication & Public Portal
+import AuthPortal from './components/auth/AuthPortal';
+
 // Layout Components
 import Navbar from './components/layout/Navbar';
 import Sidebar from './components/layout/Sidebar';
@@ -25,10 +28,10 @@ import SchemesManager from './components/admin/SchemesManager';
 import UserRegistry from './components/admin/UserRegistry';
 
 // Common
-import { CheckCircle2, AlertCircle, X } from 'lucide-react';
+import { CheckCircle2, AlertCircle } from 'lucide-react';
 
 function AppContent() {
-  const { isCompanyStaff } = useAuth();
+  const { currentUser, isCompanyStaff } = useAuth();
   const { notification } = useData();
 
   const [adminTab, setAdminTab] = useState('overview');
@@ -38,6 +41,11 @@ function AppContent() {
   const [isDepositOpen, setIsDepositOpen] = useState(false);
   const [isApplyLoanOpen, setIsApplyLoanOpen] = useState(false);
   const [isInvestOpen, setIsInvestOpen] = useState(false);
+
+  // If user is not logged in, show the production AuthPortal (Client sign up/login & Staff login)
+  if (!currentUser) {
+    return <AuthPortal />;
+  }
 
   return (
     <div className="min-h-screen bg-slate-50 flex flex-col text-slate-900 font-sans">
@@ -82,7 +90,7 @@ function AppContent() {
             </main>
           </>
         ) : (
-          /* CUSTOMER PWA PLATFORM */
+          /* CLIENT PWA PLATFORM */
           <>
             <main className="flex-1 overflow-y-auto p-4 sm:p-6 max-w-5xl mx-auto w-full">
               {/* Desktop Sub-navigation for Customer */}

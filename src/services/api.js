@@ -497,6 +497,7 @@ async function callApi(action, payload = {}, method = 'POST') {
     let url = APPS_SCRIPT_URL;
     const fetchOptions = {
       method: method,
+      redirect: 'follow',
       headers: {
         'Content-Type': 'text/plain;charset=utf-8', // Prevents preflight CORS failure with Google Apps Script
       }
@@ -510,16 +511,29 @@ async function callApi(action, payload = {}, method = 'POST') {
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 6000);
+    // 35s timeout for Google Apps Script cold starts & spreadsheet write operations
+    const timeoutId = setTimeout(() => controller.abort(), 35000);
     fetchOptions.signal = controller.signal;
 
+    const startTime = Date.now();
     const response = await fetch(url, fetchOptions);
     clearTimeout(timeoutId);
+    const latency = Date.now() - startTime;
 
     if (response.ok) {
       const data = await response.json();
       if (data && data.status === 'success') {
-        return { data, source: 'cloud' };
+        // Sync cloud state into local storage for seamless caching
+        try {
+          if (data.schemes) localStore.set('able_schemes', data.schemes);
+          if (data.users) localStore.set('able_users', data.users);
+          if (data.savings) localStore.set('able_savings', data.savings);
+          if (data.investments) localStore.set('able_investments', data.investments);
+          if (data.loans) localStore.set('able_loans', data.loans);
+          if (data.transactions) localStore.set('able_ledger', data.transactions);
+        } catch (e) { /* ignore storage error */ }
+
+        return { data, source: 'cloud', latency };
       }
     }
   } catch (err) {
@@ -527,7 +541,7 @@ async function callApi(action, payload = {}, method = 'POST') {
   }
 
   // Graceful Local Store Fallback
-  return { data: executeLocalFallback(action, payload), source: 'local' };
+  return { data: executeLocalFallback(action, payload), source: 'local', latency: 0 };
 }
 
 /**

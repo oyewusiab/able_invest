@@ -6,18 +6,15 @@ import {
   Building2, 
   ExternalLink, 
   RefreshCw, 
-  UserCheck, 
-  ShieldCheck, 
-  ChevronDown, 
   LogOut,
-  Smartphone,
-  Laptop,
-  CheckCircle,
-  AlertCircle
+  ShieldCheck,
+  CheckCircle2,
+  User,
+  ChevronDown
 } from 'lucide-react';
 
 export default function Navbar({ activeTab, setActiveTab }) {
-  const { currentUser, switchRole, logout, syncStatus, isCompanyStaff } = useAuth();
+  const { currentUser, logout, syncStatus, syncLatency, isCompanyStaff } = useAuth();
   const { loadData, loading } = useData();
   const [dropdownOpen, setDropdownOpen] = useState(false);
 
@@ -34,10 +31,10 @@ export default function Navbar({ activeTab, setActiveTab }) {
             <div className="flex items-center gap-2">
               <span className="font-extrabold text-lg tracking-tight text-white">ABLE INVEST</span>
               <span className="hidden sm:inline-block px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider bg-emerald-500/20 text-emerald-400 border border-emerald-500/30">
-                {isCompanyStaff ? 'Company Suite' : 'Customer PWA'}
+                {isCompanyStaff ? 'Management Platform' : 'Client PWA'}
               </span>
             </div>
-            <p className="text-[11px] text-slate-400 hidden sm:block">Loan, Investment & Savings Scheme Platform</p>
+            <p className="text-[11px] text-slate-400 hidden sm:block">Loan, Investment & Savings Management Platform</p>
           </div>
         </div>
 
@@ -68,23 +65,25 @@ export default function Navbar({ activeTab, setActiveTab }) {
 
           {/* Cloud Sync Status Indicator */}
           <div 
-            title={syncStatus === 'cloud' ? 'Connected to Google Apps Script' : 'Operating in High-Speed Local Ledger Sync'}
+            title={syncStatus === 'cloud' ? 'Directly connected to Google Apps Script backend' : 'Active local sync'}
             className="hidden lg:flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold bg-navy-800/80 border border-navy-700"
           >
             <span className={`w-2 h-2 rounded-full ${syncStatus === 'cloud' ? 'bg-emerald-400 animate-pulse' : 'bg-emerald-400'}`} />
             <span className="text-slate-300 text-[11px]">
-              {syncStatus === 'cloud' ? 'Sheet Connected' : 'Auto-Sync Active'}
+              {syncStatus === 'cloud' 
+                ? `Google Sheet Online ${syncLatency ? `(${syncLatency}ms)` : ''}` 
+                : 'Sheet Connected'}
             </span>
           </div>
 
-          {/* Role Switcher Pill */}
+          {/* Real User Profile & Session Logout */}
           <div className="relative">
             <button
               onClick={() => setDropdownOpen(!dropdownOpen)}
               className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-navy-800 hover:bg-navy-700 border border-navy-700 text-xs font-semibold transition"
             >
-              <div className="w-6 h-6 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
-                {currentUser?.role === 'SUPER_ADMIN' ? 'A' : currentUser?.role === 'LOAN_OFFICER' ? 'O' : 'C'}
+              <div className="w-7 h-7 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center font-bold text-xs">
+                {currentUser?.full_name ? currentUser.full_name.charAt(0).toUpperCase() : 'U'}
               </div>
               <div className="text-left hidden sm:block">
                 <div className="text-white text-xs font-bold leading-tight">{currentUser?.full_name?.split(' ')[0]}</div>
@@ -96,54 +95,30 @@ export default function Navbar({ activeTab, setActiveTab }) {
             {dropdownOpen && (
               <div className="absolute right-0 mt-2 w-64 bg-white rounded-2xl shadow-2xl border border-slate-100 py-2 z-50 text-slate-800 animate-in fade-in slide-in-from-top-2 duration-150">
                 <div className="px-4 py-2 border-b border-slate-100">
-                  <p className="text-xs text-slate-400 font-medium">Logged in as</p>
+                  <p className="text-[10px] text-slate-400 font-bold uppercase tracking-wider">Active Session</p>
                   <p className="text-sm font-bold text-slate-900">{currentUser?.full_name}</p>
                   <p className="text-xs text-slate-500">{currentUser?.email}</p>
+                  <div className="mt-1">
+                    <span className="inline-block px-2 py-0.5 rounded text-[10px] font-bold bg-slate-100 text-slate-700">
+                      {currentUser?.role?.replace('_', ' ')}
+                    </span>
+                  </div>
                 </div>
 
-                <div className="px-3 py-2">
-                  <p className="text-[11px] font-bold text-slate-400 uppercase tracking-wider px-2 mb-1">Switch Platform View</p>
-                  
-                  <button
-                    onClick={() => { switchRole('SUPER_ADMIN'); setDropdownOpen(false); setActiveTab('overview'); }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-left transition ${currentUser?.role === 'SUPER_ADMIN' ? 'bg-emerald-50 text-emerald-700' : 'hover:bg-slate-50 text-slate-700'}`}
-                  >
-                    <Building2 className="w-4 h-4 text-emerald-600" />
-                    <div>
-                      <div className="font-bold">Super Admin (Company)</div>
-                      <div className="text-[10px] text-slate-500">Full Web Management Suite</div>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => { switchRole('LOAN_OFFICER'); setDropdownOpen(false); setActiveTab('loans'); }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-left transition ${currentUser?.role === 'LOAN_OFFICER' ? 'bg-sky-50 text-sky-700' : 'hover:bg-slate-50 text-slate-700'}`}
-                  >
-                    <ShieldCheck className="w-4 h-4 text-sky-600" />
-                    <div>
-                      <div className="font-bold">Loan Analyst Desk</div>
-                      <div className="text-[10px] text-slate-500">Credit Score & Approval</div>
-                    </div>
-                  </button>
-
-                  <button
-                    onClick={() => { switchRole('CUSTOMER'); setDropdownOpen(false); setActiveTab('overview'); }}
-                    className={`w-full flex items-center gap-2.5 px-3 py-2 rounded-xl text-xs font-semibold text-left transition ${currentUser?.role === 'CUSTOMER' ? 'bg-indigo-50 text-indigo-700' : 'hover:bg-slate-50 text-slate-700'}`}
-                  >
-                    <Smartphone className="w-4 h-4 text-indigo-600" />
-                    <div>
-                      <div className="font-bold">Customer Portal (PWA)</div>
-                      <div className="text-[10px] text-slate-500">Savings, Loans & Investment</div>
-                    </div>
-                  </button>
+                <div className="px-4 py-2 text-xs text-slate-600">
+                  <div className="text-[11px] text-slate-400">Account ID:</div>
+                  <div className="font-mono text-slate-800 font-semibold">{currentUser?.id}</div>
                 </div>
 
                 <div className="border-t border-slate-100 pt-1">
                   <button
-                    onClick={() => { logout(); setDropdownOpen(false); }}
-                    className="w-full flex items-center gap-2 px-4 py-2 text-xs font-semibold text-rose-600 hover:bg-rose-50 transition"
+                    onClick={() => {
+                      setDropdownOpen(false);
+                      logout();
+                    }}
+                    className="w-full flex items-center gap-2 px-4 py-2.5 text-xs font-bold text-rose-600 hover:bg-rose-50 transition"
                   >
-                    <LogOut className="w-4 h-4" /> Reset / Logout
+                    <LogOut className="w-4 h-4" /> Sign Out / Lock Session
                   </button>
                 </div>
               </div>
